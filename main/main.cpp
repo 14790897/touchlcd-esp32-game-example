@@ -23,26 +23,30 @@ static int irand(int min_v, int max_v) {
 }
 
 // 触摸坐标修正函数 - 处理镜像问题
-static void fix_touch_coords(uint16_t& x, uint16_t& y, int screen_width, int screen_height) {
+static void fix_touch_coords(uint16_t &x, uint16_t &y, int screen_width, int screen_height)
+{
   // 常见的镜像修正方案，根据实际情况选择一种：
-  
+
   // 方案1: X轴镜像（左右翻转）
   x = screen_width - x;
-  
+
   // 方案2: Y轴镜像（上下翻转） - 如果需要可以取消注释
   // y = screen_height - y;
-  
+
   // 方案3: XY都镜像 - 如果需要可以取消注释
   // x = screen_width - x;
   // y = screen_height - y;
-  
+
   // 确保坐标在屏幕范围内
-  if (x >= screen_width) x = screen_width - 1;
-  if (y >= screen_height) y = screen_height - 1;
+  if (x >= screen_width)
+    x = screen_width - 1;
+  if (y >= screen_height)
+    y = screen_height - 1;
 }
 
 // ---- Touch effects ----
-struct Particle {
+struct Particle
+{
   int x, y;       // current position
   int px, py;     // previous position (for erase)
   int vx, vy;     // velocity (pixels/frame)
@@ -52,7 +56,8 @@ struct Particle {
   bool active;
 };
 
-struct Ripple {
+struct Ripple
+{
   int x, y;
   int radius;   // current radius
   int prev_rad; // previous radius (for erase)
@@ -62,13 +67,18 @@ struct Ripple {
 };
 
 static constexpr int MAX_PARTICLES = 48;
-static constexpr int MAX_RIPPLES   = 6;
+static constexpr int MAX_RIPPLES = 6;
 
-static void spawn_ripple(Ripple ripples[], int sw, int sh, int x, int y, uint16_t color) {
-  for (int i = 0; i < MAX_RIPPLES; ++i) {
-    if (!ripples[i].active) {
-      ripples[i].x = x; ripples[i].y = y;
-      ripples[i].radius = 2; ripples[i].prev_rad = 0;
+static void spawn_ripple(Ripple ripples[], int sw, int sh, int x, int y, uint16_t color)
+{
+  for (int i = 0; i < MAX_RIPPLES; ++i)
+  {
+    if (!ripples[i].active)
+    {
+      ripples[i].x = x;
+      ripples[i].y = y;
+      ripples[i].radius = 2;
+      ripples[i].prev_rad = 0;
       // limit max radius inside screen
       int maxr = std::min(std::min(x, sw - x), std::min(y, sh - y));
       ripples[i].max_rad = std::max(12, std::min(maxr, 48));
@@ -79,15 +89,20 @@ static void spawn_ripple(Ripple ripples[], int sw, int sh, int x, int y, uint16_
   }
 }
 
-static void spawn_particles(Particle parts[], int cx, int cy, uint16_t base_col) {
+static void spawn_particles(Particle parts[], int cx, int cy, uint16_t base_col)
+{
   int spawned = 0;
-  for (int i = 0; i < MAX_PARTICLES && spawned < 24; ++i) {
-    if (!parts[i].active) {
+  for (int i = 0; i < MAX_PARTICLES && spawned < 24; ++i)
+  {
+    if (!parts[i].active)
+    {
       int vx = irand(-3, 3), vy = irand(-3, 3);
-      if (vx == 0 && vy == 0) vx = 1;
+      if (vx == 0 && vy == 0)
+        vx = 1;
       parts[i].x = parts[i].px = cx;
       parts[i].y = parts[i].py = cy;
-      parts[i].vx = vx; parts[i].vy = vy;
+      parts[i].vx = vx;
+      parts[i].vy = vy;
       parts[i].r = parts[i].pr = irand(2, 4);
       parts[i].life = irand(14, 22);
       // slight color variation
@@ -108,16 +123,17 @@ static void spawn_particles(Particle parts[], int cx, int cy, uint16_t base_col)
 extern "C" void app_main(void)
 {
   ESP_LOGI(TAG, "Starting touch game...");
-  
+
   // 延迟一下让系统稳定
   vTaskDelay(pdMS_TO_TICKS(100));
-  
+
   static LGFX gfx; // 使用静态分配避免栈溢出
-  
+
   ESP_LOGI(TAG, "Initializing LGFX...");
   if (!gfx.init()) {
     ESP_LOGE(TAG, "LGFX init failed");
-    while(1) {
+    while (1)
+    {
       vTaskDelay(pdMS_TO_TICKS(1000));
     }
   }
@@ -129,17 +145,20 @@ extern "C" void app_main(void)
 
   const int sw = gfx.width();
   const int sh = gfx.height();
-  
+
   ESP_LOGI(TAG, "Screen size: %dx%d", sw, sh);
-  
+
   // 检查触摸功能是否可用
   ESP_LOGI(TAG, "Checking touch capability...");
-  if (gfx.touch()) {
+  if (gfx.touch())
+  {
     ESP_LOGI(TAG, "Touch controller initialized successfully");
-  } else {
+  }
+  else
+  {
     ESP_LOGI(TAG, "Touch controller not available, continuing without touch");
   }
-  
+
   // 测试基本绘图功能
   ESP_LOGI(TAG, "Testing basic drawing...");
   gfx.fillScreen(TFT_BLACK);
@@ -149,7 +168,7 @@ extern "C" void app_main(void)
   gfx.println("Touch Game");
   gfx.setCursor(10, 40);
   gfx.println("Loading...");
-  
+
   vTaskDelay(pdMS_TO_TICKS(1000)); // 等待1秒确保稳定
 
   // 跳过校准，直接进入游戏
@@ -166,7 +185,7 @@ extern "C" void app_main(void)
   gfx.println("Touch coordinates will be");
   gfx.setCursor(10, 85);
   gfx.println("automatically mirrored");
-  
+
   vTaskDelay(pdMS_TO_TICKS(2000)); // 显示2秒
 
   // 游戏元素
@@ -181,7 +200,7 @@ extern "C" void app_main(void)
 
   // 效果缓存 - 使用静态分配避免栈溢出
   static Particle particles[MAX_PARTICLES] = {};
-  static Ripple   ripples[MAX_RIPPLES] = {};
+  static Ripple ripples[MAX_RIPPLES] = {};
 
   ESP_LOGI(TAG, "Starting main game loop...");
 
@@ -204,14 +223,18 @@ extern "C" void app_main(void)
   // 主循环
   while (true) {
     // 先擦除上帧的特效，以免覆盖新绘制的小球
-    for (int i = 0; i < MAX_PARTICLES; ++i) if (particles[i].active) {
-      gfx.fillCircle(particles[i].px, particles[i].py, particles[i].pr + 1, TFT_BLACK);
-    }
-    for (int i = 0; i < MAX_RIPPLES; ++i) if (ripples[i].active && ripples[i].prev_rad > 0) {
-      // 擦除上一帧的波纹（用黑色描边）
-      gfx.drawCircle(ripples[i].x, ripples[i].y, ripples[i].prev_rad, TFT_BLACK);
-      gfx.drawCircle(ripples[i].x, ripples[i].y, ripples[i].prev_rad - 1, TFT_BLACK);
-    }
+    for (int i = 0; i < MAX_PARTICLES; ++i)
+      if (particles[i].active)
+      {
+        gfx.fillCircle(particles[i].px, particles[i].py, particles[i].pr + 1, TFT_BLACK);
+      }
+    for (int i = 0; i < MAX_RIPPLES; ++i)
+      if (ripples[i].active && ripples[i].prev_rad > 0)
+      {
+        // 擦除上一帧的波纹（用黑色描边）
+        gfx.drawCircle(ripples[i].x, ripples[i].y, ripples[i].prev_rad, TFT_BLACK);
+        gfx.drawCircle(ripples[i].x, ripples[i].y, ripples[i].prev_rad - 1, TFT_BLACK);
+      }
 
     // 移动小球
     int nx = cx + vx;
@@ -229,12 +252,13 @@ extern "C" void app_main(void)
     if (gfx.getTouch(&tx, &ty)) {
       // 应用镜像修正
       fix_touch_coords(tx, ty, sw, sh);
-      
+
       int dx = (int)tx - cx;
       int dy = (int)ty - cy;
       uint32_t now = lgfx::v1::millis();
       // 点击波纹（限频）
-      if (now - last_touch_ms > 80) {
+      if (now - last_touch_ms > 80)
+      {
         spawn_ripple(ripples, sw, sh, tx, ty, TFT_DARKGREY);
         last_touch_ms = now;
       }
@@ -261,7 +285,8 @@ extern "C" void app_main(void)
     }
 
     // 超时未命中则自动换一个
-    if (lgfx::v1::millis() - last_spawn_ms > 5000) {
+    if (lgfx::v1::millis() - last_spawn_ms > 5000)
+    {
       gfx.fillCircle(cx, cy, radius + 2, TFT_BLACK);
       radius = irand(16, 28);
       cx = irand(radius, sw - radius);
@@ -274,38 +299,45 @@ extern "C" void app_main(void)
     }
 
     // 更新并绘制特效
-    for (int i = 0; i < MAX_PARTICLES; ++i) if (particles[i].active) {
-      // 更新
-      particles[i].px = particles[i].x;
-      particles[i].py = particles[i].y;
-      particles[i].pr = particles[i].r;
-      particles[i].x += particles[i].vx;
-      particles[i].y += particles[i].vy;
-      if ((particles[i].life & 1) == 0 && particles[i].r > 0) particles[i].r--; // 隔帧缩小
-      particles[i].life--;
-      if (particles[i].life <= 0 || particles[i].r <= 0) {
-        // 擦除尾迹
-        gfx.fillCircle(particles[i].px, particles[i].py, particles[i].pr + 1, TFT_BLACK);
-        particles[i].active = false;
-        continue;
+    for (int i = 0; i < MAX_PARTICLES; ++i)
+      if (particles[i].active)
+      {
+        // 更新
+        particles[i].px = particles[i].x;
+        particles[i].py = particles[i].y;
+        particles[i].pr = particles[i].r;
+        particles[i].x += particles[i].vx;
+        particles[i].y += particles[i].vy;
+        if ((particles[i].life & 1) == 0 && particles[i].r > 0)
+          particles[i].r--; // 隔帧缩小
+        particles[i].life--;
+        if (particles[i].life <= 0 || particles[i].r <= 0)
+        {
+          // 擦除尾迹
+          gfx.fillCircle(particles[i].px, particles[i].py, particles[i].pr + 1, TFT_BLACK);
+          particles[i].active = false;
+          continue;
+        }
+        // 绘制
+        gfx.fillCircle(particles[i].x, particles[i].y, particles[i].r, particles[i].color);
       }
-      // 绘制
-      gfx.fillCircle(particles[i].x, particles[i].y, particles[i].r, particles[i].color);
-    }
 
-    for (int i = 0; i < MAX_RIPPLES; ++i) if (ripples[i].active) {
-      ripples[i].prev_rad = ripples[i].radius;
-      ripples[i].radius += 2; // 扩散速度
-      if (ripples[i].radius >= ripples[i].max_rad) {
-        // 擦除最后一圈
-        gfx.drawCircle(ripples[i].x, ripples[i].y, ripples[i].prev_rad, TFT_BLACK);
-        ripples[i].active = false;
-        continue;
+    for (int i = 0; i < MAX_RIPPLES; ++i)
+      if (ripples[i].active)
+      {
+        ripples[i].prev_rad = ripples[i].radius;
+        ripples[i].radius += 2; // 扩散速度
+        if (ripples[i].radius >= ripples[i].max_rad)
+        {
+          // 擦除最后一圈
+          gfx.drawCircle(ripples[i].x, ripples[i].y, ripples[i].prev_rad, TFT_BLACK);
+          ripples[i].active = false;
+          continue;
+        }
+        // 用两条线画出稍厚的波纹
+        gfx.drawCircle(ripples[i].x, ripples[i].y, ripples[i].radius, ripples[i].color);
+        gfx.drawCircle(ripples[i].x, ripples[i].y, ripples[i].radius - 1, ripples[i].color);
       }
-      // 用两条线画出稍厚的波纹
-      gfx.drawCircle(ripples[i].x, ripples[i].y, ripples[i].radius, ripples[i].color);
-      gfx.drawCircle(ripples[i].x, ripples[i].y, ripples[i].radius - 1, ripples[i].color);
-    }
 
     vTaskDelay(pdMS_TO_TICKS(16)); // ~60 FPS
   }

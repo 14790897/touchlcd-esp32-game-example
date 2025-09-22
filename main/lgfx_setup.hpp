@@ -44,7 +44,7 @@
 #undef  TOUCH_CS
 #define TOUCH_CS   7
 #undef  TOUCH_IRQ
-#define TOUCH_IRQ  -1
+#define TOUCH_IRQ -1
 #undef  TOUCH_SCLK
 #define TOUCH_SCLK 42
 #undef  TOUCH_MOSI
@@ -206,17 +206,16 @@ public:
       tcfg.freq = TOUCH_FREQ;
       tcfg.bus_shared = false;               // use separate bus from display
       tcfg.offset_rotation = TOUCH_ROTATION; // adjust if mapping is rotated
-      
+
       // XPT2046 校准参数 - 根据实际测试调整
       // 这些值需要根据您的硬件进行微调
-      tcfg.x_min = 300;     // X轴最小原始值
-      tcfg.x_max = 3900;    // X轴最大原始值  
-      tcfg.y_min = 300;     // Y轴最小原始值
-      tcfg.y_max = 3900;    // Y轴最大原始值
-      
+      tcfg.x_min = 300;  // X轴最小原始值
+      tcfg.x_max = 3900; // X轴最大原始值
+      tcfg.y_min = 300;  // Y轴最小原始值
+      tcfg.y_max = 3900; // Y轴最大原始值
+
       // 触摸变换和旋转
       tcfg.offset_rotation = TOUCH_ROTATION;
-      
 
       _touch.config(tcfg);
       _panel.setTouch(&_touch);
