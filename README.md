@@ -1,54 +1,210 @@
-# ESP32-S3 触摸游戏项目# _Sample project_
+# ESP32-S3 触摸游戏示例
 
+这是一个基于ESP32-S3和LovyanGFX库的触摸屏游戏项目，展示了如何在ESP32上实现触摸检测、图形绘制和游戏逻辑。
 
+## 🎮 游戏特性
 
-基于ESP32-S3和LovyanGFX库开发的触摸屏游戏，使用ILI9341显示屏和XPT2046触摸控制器。(See the README.md file in the upper level 'examples' directory for more information about examples.)
+- **触摸球游戏**：点击移动的彩色球来得分
+- **炫酷视觉效果**：
+  - 粒子爆炸特效
+  - 波纹扩散效果
+  - 随机彩色球
+- **触摸镜像修正**：自动修正触摸坐标偏移问题
+- **实时计分**：显示当前得分
 
+## 🔧 硬件要求
 
-
-## 🎮 游戏特色This is the simplest buildable example. The example is used by command `idf.py create-project`
-
-that copies the project to user specified path and set it's name. For more information follow the [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project)
-
-- 🎯 **触摸球游戏**：点击移动的彩色球获得分数
-
-- 🌈 **随机彩色球**：每个球都有随机的鲜艳颜色
-
-- ✨ **视觉特效**：
-
-  - 触摸波纹效果## How to use example
-
-  - 击中时的粒子爆炸特效We encourage the users to use the example as a template for the new projects.
-
-  - 平滑的球体移动动画A recommended way is to follow the instructions on a [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project).
-
-- 📊 **实时计分**：显示当前得分
-
-- ⏰ **自动换球**：5秒未击中自动生成新球## Example folder contents
-
-
-
-## 🔧 硬件配置The project **sample_project** contains one source file in C language [main.c](main/main.c). The file is located in folder [main](main).
-
-
-
-### 主控板ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt`
-
-- **ESP32-S3-DevKitM-1**files that provide set of directives and instructions describing the project's source files and targets
-
-(executable, library, or both). 
+### 主控板
+- **ESP32-S3-DevKitM-1** 或兼容开发板
 
 ### 显示屏
+- **ILI9341** 2.8寸 TFT LCD (240x320)
+- SPI接口
 
-- **型号**：ILI9341 240x320 TFT LCDBelow is short explanation of remaining files in the project folder.
+### 触摸屏
+- **XPT2046** 触摸控制器
+- 与显示屏共享SPI总线
 
-- **接口**：SPI
+## 📋 引脚连接
 
-- **引脚连接**：```
+| 功能 | ESP32-S3 引脚 | 说明 |
+|------|---------------|------|
+| **显示屏 SPI** |  |  |
+| MOSI | GPIO 1 | SPI数据输出 |
+| SCLK | GPIO 2 | SPI时钟 |
+| MISO | GPIO 8 | SPI数据输入 |
+| CS | GPIO 3 | 显示屏片选 |
+| DC | GPIO 4 | 数据/命令选择 |
+| RST | GPIO 5 | 复位 |
+| BL | GPIO 6 | 背光控制 |
+| **触摸屏** |  |  |
+| T_CS | GPIO 7 | 触摸片选 |
+| T_SCLK | GPIO 42 | 触摸时钟 |
+| T_MOSI | GPIO 41 | 触摸数据输出 |
+| T_MISO | GPIO 40 | 触摸数据输入 |
 
-  ```├── CMakeLists.txt
+## 🚀 快速开始
 
-  MOSI: GPIO 1├── main
+### 1. 环境准备
+
+```bash
+# 安装ESP-IDF (v5.0+)
+git clone --recursive https://github.com/espressif/esp-idf.git
+cd esp-idf
+./install.sh
+source ./export.sh
+```
+
+### 2. 克隆项目
+
+```bash
+git clone https://github.com/14790897/touchlcd-esp32-game-example.git
+cd touchlcd-esp32-game-example
+```
+
+### 3. 初始化子模块
+
+```bash
+git submodule update --init --recursive
+```
+
+### 4. 编译和烧录
+
+```bash
+# 配置项目
+idf.py menuconfig
+
+# 编译
+idf.py build
+
+# 烧录并监控
+idf.py flash monitor
+```
+
+## 📁 项目结构
+
+```
+├── main/
+│   ├── main.cpp              # 主程序和游戏逻辑
+│   ├── lgfx_setup.hpp        # LovyanGFX配置
+│   └── CMakeLists.txt        # 主要组件配置
+├── components/
+│   └── LovyanGFX/            # LovyanGFX库
+├── CMakeLists.txt            # 项目配置
+├── sdkconfig                 # ESP-IDF配置
+└── README.md                 # 项目说明
+```
+
+## � 游戏玩法
+
+1. **启动游戏**：程序启动后会显示"Touch Game"界面
+2. **击球得分**：触摸屏幕上移动的彩色球来得分
+3. **视觉特效**：
+   - 击中球时会产生粒子爆炸效果
+   - 触摸时会产生波纹扩散效果
+   - 每个新球都有随机颜色
+4. **自动换球**：如果5秒内未击中，球会自动变换位置和颜色
+
+## 🔧 触摸校准
+
+项目内置了触摸坐标镜像修正功能：
+
+- **X轴镜像**：自动修正左右镜像问题
+- **坐标范围限制**：确保触摸坐标在屏幕范围内
+
+如需调整，可在 `main.cpp` 中的 `fix_touch_coords()` 函数中修改：
+
+```cpp
+// X轴镜像（左右翻转）
+x = screen_width - x;
+
+// Y轴镜像（上下翻转） - 如果需要
+// y = screen_height - y;
+```
+
+## 📊 技术特性
+
+### 图形系统
+- **LovyanGFX**：高性能图形库
+- **16位颜色**：RGB565格式
+- **硬件加速**：ESP32 SPI DMA
+
+### 触摸检测
+- **XPT2046控制器**：12位精度
+- **轮询模式**：无需中断引脚
+- **坐标修正**：自动镜像修正
+
+### 游戏引擎
+- **60FPS**：流畅的游戏体验
+- **粒子系统**：最多48个粒子
+- **波纹效果**：最多6个同时波纹
+
+## 🛠️ 自定义配置
+
+### 修改显示屏参数
+
+在 `main/lgfx_setup.hpp` 中：
+
+```cpp
+#define TFT_WIDTH  240      // 屏幕宽度
+#define TFT_HEIGHT 320      // 屏幕高度
+#define TFT_FREQ   40000000 // SPI频率
+```
+
+### 修改触摸参数
+
+```cpp
+#define TOUCH_FREQ 1000000  // 触摸SPI频率
+// 校准参数
+tcfg.x_min = 300;
+tcfg.x_max = 3900;
+tcfg.y_min = 300;
+tcfg.y_max = 3900;
+```
+
+### 修改游戏参数
+
+在 `main/main.cpp` 中：
+
+```cpp
+static constexpr int MAX_PARTICLES = 48;  // 最大粒子数
+static constexpr int MAX_RIPPLES = 6;     // 最大波纹数
+// 球的大小范围
+radius = irand(16, 28);
+```
+
+## 📝 故障排除
+
+### 显示问题
+- **黑屏**：检查SPI连接和电源
+- **颜色异常**：检查颜色格式配置
+- **花屏**：降低SPI频率
+
+### 触摸问题
+- **无触摸响应**：检查触摸SPI连接
+- **坐标偏移**：调整镜像修正参数
+- **检测不稳定**：降低触摸SPI频率
+
+### 编译问题
+- **LovyanGFX错误**：确保子模块正确初始化
+- **链接错误**：检查CMakeLists.txt配置
+
+## 📄 许可证
+
+本项目基于MIT许可证开源。详见LICENSE文件。
+
+## 🤝 贡献
+
+欢迎提交Issue和Pull Request！
+
+## 📞 联系方式
+
+- GitHub: [@14790897](https://github.com/14790897)
+- 项目地址: [touchlcd-esp32-game-example](https://github.com/14790897/touchlcd-esp32-game-example)
+
+---
+
+**享受编程的乐趣！** 🎉
 
   SCLK: GPIO 2│   ├── CMakeLists.txt
 
