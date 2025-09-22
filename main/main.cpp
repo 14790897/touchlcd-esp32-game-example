@@ -198,6 +198,9 @@ extern "C" void app_main(void)
   uint32_t last_spawn_ms = 0;
   uint32_t last_touch_ms = 0;
 
+  // 添加球的颜色变量
+  uint16_t ball_color = gfx.color888(irand(100,255), irand(100,255), irand(100,255));
+
   // 效果缓存 - 使用静态分配避免栈溢出
   static Particle particles[MAX_PARTICLES] = {};
   static Ripple ripples[MAX_RIPPLES] = {};
@@ -218,7 +221,7 @@ extern "C" void app_main(void)
   };
 
   draw_hud();
-  draw_ball(cx, cy, TFT_GREEN);
+  draw_ball(cx, cy, ball_color);
 
   // 主循环
   while (true) {
@@ -245,7 +248,7 @@ extern "C" void app_main(void)
     // 擦除旧位置、绘制新位置
     gfx.fillCircle(cx, cy, radius + 1, TFT_BLACK);
     cx = nx; cy = ny;
-    draw_ball(cx, cy, TFT_GREEN);
+    draw_ball(cx, cy, ball_color);
 
     // 触摸检测
     uint16_t tx, ty;
@@ -275,11 +278,12 @@ extern "C" void app_main(void)
         vx = (irand(0, 1) ? 1 : -1) * irand(2, 5);
         vy = (irand(0, 1) ? 1 : -1) * irand(2, 5);
         uint16_t col = gfx.color888(irand(0,255), irand(0,255), irand(0,255));
+        ball_color = gfx.color888(irand(100,255), irand(100,255), irand(100,255)); // 新球颜色
         // 粒子爆炸特效
         spawn_particles(particles, tx, ty, col);
         // 强调波纹
         spawn_ripple(ripples, sw, sh, tx, ty, col);
-        draw_ball(cx, cy, col);
+        draw_ball(cx, cy, ball_color);
         last_spawn_ms = lgfx::v1::millis();
       }
     }
@@ -294,7 +298,8 @@ extern "C" void app_main(void)
       vx = (irand(0, 1) ? 1 : -1) * irand(2, 5);
       vy = (irand(0, 1) ? 1 : -1) * irand(2, 5);
       uint16_t col = gfx.color888(irand(0,255), irand(0,255), irand(0,255));
-      draw_ball(cx, cy, col);
+      ball_color = gfx.color888(irand(100,255), irand(100,255), irand(100,255)); // 新球颜色
+      draw_ball(cx, cy, ball_color);
       last_spawn_ms = lgfx::v1::millis();
     }
 
