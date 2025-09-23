@@ -30,14 +30,28 @@ extern "C" void app_main(void)
   gfx.setColorDepth(16);
   gfx.fillScreen(TFT_BLACK);
 
-#if GAME_MODE == 1
-  ESP_LOGI(TAG, "GAME_MODE=1 (Tap Ball)");
-  game_tap_ball(gfx);
-#elif GAME_MODE == 2
-  ESP_LOGI(TAG, "GAME_MODE=2 (Whack-a-Mole)");
-  game_whack(gfx);
+#if ENABLE_GAME_SWITCH
+  int mode = (GAME_MODE == 2) ? 2 : 1;
+  while (true) {
+    if (mode == 1) {
+      ESP_LOGI(TAG, "GAME_MODE=1 (Tap Ball)");
+      game_tap_ball(gfx);   // returns on long-press top-left
+      mode = 2;
+    } else {
+      ESP_LOGI(TAG, "GAME_MODE=2 (Whack-a-Mole)");
+      game_whack(gfx);      // returns on long-press top-left
+      mode = 1;
+    }
+  }
 #else
-#error "Invalid GAME_MODE (use 1 or 2)"
+  #if GAME_MODE == 1
+    ESP_LOGI(TAG, "GAME_MODE=1 (Tap Ball)");
+    game_tap_ball(gfx);
+  #elif GAME_MODE == 2
+    ESP_LOGI(TAG, "GAME_MODE=2 (Whack-a-Mole)");
+    game_whack(gfx);
+  #else
+    #error "Invalid GAME_MODE (use 1 or 2)"
+  #endif
 #endif
 }
-

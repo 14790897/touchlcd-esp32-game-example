@@ -33,6 +33,9 @@ void game_whack(LGFX& gfx)
     gfx.fillRect(0, 0, sw, 18, TFT_BLACK);
     gfx.setCursor(4, 2);
     gfx.printf("Game 2  Score:%d  Miss:%d", score, miss);
+#if ENABLE_GAME_SWITCH
+    draw_switch_button(gfx, sw, "SWITCH");
+#endif
   };
   draw_hud();
 
@@ -48,9 +51,6 @@ void game_whack(LGFX& gfx)
   draw_target();
 
   while (true) {
-#if ENABLE_GAME_SWITCH
-    if (detect_switch_longpress(gfx, sw, sh, hold_switch_ms)) { gfx.fillScreen(TFT_BLACK); ESP_LOGI(TAG_GAME2, "Switch requested"); return; }
-#endif
     uint32_t now = lgfx::v1::millis();
     if (now - spawn_ms > ttl_ms) {
       gfx.fillCircle(txc, tyc, radius + 2, TFT_BLACK);
@@ -61,6 +61,10 @@ void game_whack(LGFX& gfx)
     uint16_t x, y;
     if (gfx.getTouch(&x, &y)) {
       fix_touch_coords(x, y, sw, sh);
+      // top-right switch button tap
+#if ENABLE_GAME_SWITCH
+      if (is_in_switch_button(sw, x, y)) { gfx.fillScreen(TFT_BLACK); ESP_LOGI(TAG_GAME2, "Switch button"); return; }
+#endif
       int dx = (int)x - txc, dy = (int)y - tyc;
       if ((dx*dx + dy*dy) <= radius*radius) {
         gfx.fillCircle(txc, tyc, radius + 2, TFT_BLACK);
@@ -103,4 +107,3 @@ void game_whack(LGFX& gfx)
     vTaskDelay(pdMS_TO_TICKS(16));
   }
 }
-

@@ -9,3 +9,5 @@ idf_component_register(
         LovyanGFX
         driver
 )
+
+target_compile_definitions(${COMPONENT_LIB} PRIVATE GAME_MODE=2 ENABLE_GAME_SWITCH=1)

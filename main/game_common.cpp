@@ -75,23 +75,36 @@ void draw_title(LGFX& gfx, const char* title, int sw)
 }
 
 #if ENABLE_GAME_SWITCH
-bool detect_switch_longpress(LGFX& gfx, int sw, int sh, uint32_t& hold_start_ms,
-                             int area_w, int area_h, int hold_ms)
+// Button: right-aligned in the title bar
+static constexpr int BTN_H = 16;
+static constexpr int BTN_W = 50;
+static constexpr int BTN_PAD = 2; // right/top padding
+
+void draw_switch_button(LGFX &gfx, int sw, const char *label)
 {
-  uint16_t tx, ty;
-  if (gfx.getTouch(&tx, &ty)) {
-    fix_touch_coords(tx, ty, sw, sh);
-    uint32_t now = lgfx::v1::millis();
-    if (tx < area_w && ty < area_h) {
-      if (hold_start_ms == 0) hold_start_ms = now;
-      if (now - hold_start_ms > (uint32_t)hold_ms) return true;
-    } else {
-      hold_start_ms = 0;
-    }
-  } else {
-    hold_start_ms = 0;
-  }
-  return false;
+  int x = sw - BTN_W - BTN_PAD;
+  int y = (18 - BTN_H) / 2;
+  if (y < 0)
+    y = 0;
+  gfx.fillRoundRect(x, y, BTN_W, BTN_H, 3, TFT_DARKGREY);
+  gfx.drawRoundRect(x, y, BTN_W, BTN_H, 3, TFT_WHITE);
+  gfx.setTextColor(TFT_WHITE, TFT_DARKGREY);
+  gfx.setFont(&fonts::Font0);
+  gfx.setTextSize(1);
+  int tw = gfx.textWidth(label);
+  int tx = x + (BTN_W - tw) / 2;
+  int ty = y + 3;
+  gfx.setCursor(tx, ty);
+  gfx.print(label);
+}
+
+bool is_in_switch_button(int sw, uint16_t x, uint16_t y)
+{
+  int bx = sw - BTN_W - BTN_PAD;
+  int by = (18 - BTN_H) / 2;
+  if (by < 0)
+    by = 0;
+  return (y < 18) && (x >= bx) && (x < bx + BTN_W) && (y >= by) && (y < by + BTN_H);
 }
 #endif
 

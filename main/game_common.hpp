@@ -50,7 +50,7 @@ void spawn_ripple(Ripple ripples[], int sw, int sh, int x, int y, uint16_t color
 void draw_title(LGFX& gfx, const char* title, int sw);
 
 #if ENABLE_GAME_SWITCH
-bool detect_switch_longpress(LGFX& gfx, int sw, int sh, uint32_t& hold_start_ms,
-                             int area_w = 48, int area_h = 48, int hold_ms = 800);
+// Switch button helpers (top-right within title bar height ~18px)
+void draw_switch_button(LGFX& gfx, int sw, const char* label = "SW");
+bool is_in_switch_button(int sw, uint16_t x, uint16_t y);
 #endif
-

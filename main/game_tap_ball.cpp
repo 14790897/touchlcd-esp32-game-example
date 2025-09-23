@@ -37,16 +37,16 @@ void game_tap_ball(LGFX& gfx)
     gfx.fillRect(0, 0, sw, 18, TFT_BLACK);
     gfx.setCursor(4, 2);
     gfx.printf("Game 1  Score: %d", score);
+#if ENABLE_GAME_SWITCH
+    draw_switch_button(gfx, sw, "SWITCH");
+#endif
   };
   auto draw_ball = [&](int x, int y, uint16_t col){ gfx.fillCircle(x, y, radius, col); };
 
   draw_ball(cx, cy, ball_color);
 
-  while (true) {
-#if ENABLE_GAME_SWITCH
-    if (detect_switch_longpress(gfx, sw, sh, hold_switch_ms)) { gfx.fillScreen(TFT_BLACK); ESP_LOGI(TAG_GAME1, "Switch requested"); return; }
-#endif
-
+  while (true)
+  {
     // erase previous effects
     for (int i = 0; i < MAX_PARTICLES; ++i) if (particles[i].active)
       gfx.fillCircle(particles[i].px, particles[i].py, particles[i].pr + 1, TFT_BLACK);
@@ -68,6 +68,15 @@ void game_tap_ball(LGFX& gfx)
     uint16_t tx, ty;
     if (gfx.getTouch(&tx, &ty)) {
       fix_touch_coords(tx, ty, sw, sh);
+      // top-right switch button tap
+#if ENABLE_GAME_SWITCH
+      if (is_in_switch_button(sw, tx, ty))
+      {
+        gfx.fillScreen(TFT_BLACK);
+        ESP_LOGI(TAG_GAME1, "Switch button");
+        return;
+      }
+#endif
       int dx = (int)tx - cx;
       int dy = (int)ty - cy;
       uint32_t now = lgfx::v1::millis();
@@ -122,4 +131,3 @@ void game_tap_ball(LGFX& gfx)
     vTaskDelay(pdMS_TO_TICKS(16));
   }
 }
-
