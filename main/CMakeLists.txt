@@ -4,6 +4,8 @@ idf_component_register(
         game_common.cpp
         game_tap_ball.cpp
         game_whack.cpp
+        game_memory_grid.cpp
+        game_rain_catch.cpp
     INCLUDE_DIRS "."
     REQUIRES
         LovyanGFX
